@@ -84,7 +84,6 @@ def valid_actions(grid, current_node):
         valid_actions.remove(Action.WEST)
     if y + 1 > m or grid[x, y + 1] == 1:
         valid_actions.remove(Action.EAST)
-
     return valid_actions
 
 
@@ -141,6 +140,30 @@ def a_star(grid, h, start, goal):
 
 
 
-def heuristic(position, goal_position):
-    return np.linalg.norm(np.array(position) - np.array(goal_position))
+#def heuristic(position, goal_position):
+ #   return np.linalg.norm(np.array(position) - np.array(goal_position))
 
+def heuristic(position, goal_position):
+    return np.sqrt((position[0] - goal_position[0])**2 + (position[1] - goal_position[1])**2)
+
+
+def point(p):
+    return np.array([p[0], p[1], 1.]).reshape(1, -1)
+
+def collinearity_check(p1, p2, p3, epsilon=1e-1):
+    m = np.concatenate((p1, p2, p3), 0)
+    det = np.linalg.det(m)
+    return abs(det) < epsilon
+    
+def prune_path(path):
+    pruned_path = [p for p in path]
+    i = 0
+    while i < len(pruned_path) - 2:
+        p1 = point(pruned_path[i])
+        p2 = point(pruned_path[i+1])
+        p3 = point(pruned_path[i+2])
+        if collinearity_check(p1,p2,p3):
+            pruned_path.remove(pruned_path[i+1])
+        else:
+            i+=1
+    return pruned_path
